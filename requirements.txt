@@ -1,7 +1,7 @@
 geopy==2.4
 numpy==1.26
 pandas==2.2
-pandas-stubs==2.2
+pandas-stubs
 matplotlib==3.8
 seaborn==0.13
 flake8==7.0
