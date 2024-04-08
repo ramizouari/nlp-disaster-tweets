@@ -13,7 +13,7 @@ class PreprocessLayer(ABC):
 
 
 def is_address_form(address):
-    match = re.search("((\w+)[ ,.]*)+", address)
+    match = re.search(R"((\w+)[ ,.]*)+", address)
     return match
 
 
@@ -25,6 +25,18 @@ def register_metadata(metadata, index, value):
     if metadata is not None and index is not None:
         metadata[index] = value
 
+def to_address_form(address, scope):
+    if not is_address_form(address):
+        return address, False
+    match scope:
+        case "country":
+            return address.split(",")[-1], True
+        case "state":
+            return address.split(",")[-2], True
+        case "county":
+            return address.split(",")[-3], True
+        case _:
+            raise ValueError("Invalid scope")
 
 class GeolocationStepConverter(ABC):
     """
@@ -48,13 +60,13 @@ class GeolocationStepConverter(ABC):
 
 class AsyncGeolocationStepConverter(ABC):
     """
-    Abstract class for converting a location to a geolocation
+    Abstract class for converting a location to a geolocation asynchronously
     """
 
     @abstractmethod
     async def convert(self, location, *, metadata=None, index=None):
         """
-        Try to convert the location to a geolocation
+        Try to convert the location to a geolocation asynchronously
         :param location: The location to convert
         :param metadata: The metadata to update
         :param index: The index to update
@@ -67,21 +79,35 @@ class AsyncGeolocationStepConverter(ABC):
 
 
 class StripLocation(GeolocationStepConverter):
+    """
+    Strip the location of any leading or trailing whitespace
+    """
     def convert(self, location, *, metadata=None, index=None):
         return location.strip(), False
 
 
 class AsyncStripLocation(GeolocationStepConverter):
+    """
+    Strip the location of any leading or trailing whitespace asynchronously
+    """
     async def convert(self, location, *, metadata=None, index=None):
         return location.strip(), False
 
 
 class AddressToGeolocation(GeolocationStepConverter):
+    """
+    Convert an address to a geolocation
+    """
     def __init__(self, geolocator, address_extractor=False):
+        """
+        Initialize the converter
+        :param geolocator: The geolocator to use
+        :param address_extractor: The function to use to extract the address
+        """
         self.geolocator = geolocator
-        if address_extractor == True:
+        if address_extractor == True: # noqa: E712
             self.extractor = to_address_form
-        elif address_extractor == False:
+        elif address_extractor == False: # noqa: E712
             self.extractor = match_everything
         else:
             self.extractor = address_extractor
@@ -98,11 +124,19 @@ class AddressToGeolocation(GeolocationStepConverter):
 
 
 class AsyncAddressToGeolocation(AsyncGeolocationStepConverter):
+    """
+    Convert an address to a geolocation asynchronously
+    """
     def __init__(self, geolocator, address_extractor=False):
+        """
+        Initialize the converter
+        :param geolocator: The geolocator to use
+        :param address_extractor: The function to use to extract the address
+        """
         self.geolocator = geolocator
-        if address_extractor == True:
+        if address_extractor == True:  # noqa: E712
             self.extractor = to_address_form
-        elif address_extractor == False:
+        elif address_extractor == False: # noqa: E712
             self.extractor = match_everything
         else:
             self.extractor = address_extractor
@@ -124,7 +158,14 @@ def extract_lat_long_form(location):
 
 
 class LatLongToGeolocation(GeolocationStepConverter):
+    """
+    Convert a lat-long to a geolocation
+    """
     def __init__(self, geolocator):
+        """
+        Initialize the converter
+        :param geolocator: The geolocator to use
+        """
         self.geolocator = geolocator
 
     def convert(self, location, *, metadata=None, index=None):
@@ -138,7 +179,14 @@ class LatLongToGeolocation(GeolocationStepConverter):
 
 
 class AsyncLatLongToGeolocation(AsyncGeolocationStepConverter):
+    """
+    Convert a lat-long to a geolocation asynchronously
+    """
     def __init__(self, geolocator):
+        """
+        Initialize the converter
+        :param geolocator: The geolocator to use
+        """
         self.geolocator = geolocator
 
     async def convert(self, location, *, metadata=None, index=None):
@@ -171,9 +219,16 @@ async def async_transform(location, transformers):
 
 
 class DefaultPreprocessLocationLayer(PreprocessLayer):
+    """
+    Default location preprocessing layer
+    """
     TRANSFORMERS = []
 
     def __init__(self, force_update=False):
+        """
+        Initialize the layer
+        :param force_update: Whether to force update the geolocation
+        """
         self.force_update = force_update
 
     def _task(self, row):
@@ -193,6 +248,11 @@ class DefaultPreprocessLocationLayer(PreprocessLayer):
             df["geolocation_converted"] = False
 
     def preprocess(self, df):
+        """
+        Preprocess the location
+        :param df: The dataframe to preprocess
+        :return: The preprocessed dataframe, with the additional geolocation and geolocation_converted columns
+        """
         self._prepare(df)
         df[["geolocation", "geolocation_converted"]] = df.apply(
             self._task, axis=1, result_type="expand"
@@ -200,6 +260,11 @@ class DefaultPreprocessLocationLayer(PreprocessLayer):
         return df
 
     async def apreprocess(self, df):
+        """
+        Preprocess the location asynchronously
+        :param df: The dataframe to preprocess
+        :return: The preprocessed dataframe, with the additional geolocation and geolocation_converted columns
+        """
         self._prepare(df)
         df[["geolocation", "geolocation_converted"]] = pd.DataFrame(
             await asyncio.gather(
