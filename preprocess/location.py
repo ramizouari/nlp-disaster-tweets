@@ -76,7 +76,6 @@ def extract_lat_long_form(location:str)-> Optional[re.Match]:
     match = re.search("([-+]?[0-9]*\.?[0-9]+),([-+]?[0-9]*\.?[0-9]+)", location)
     return match
 
-
 async def async_transform(location, transformers):
     if len(transformers) == 0:
         return np.nan, False
@@ -136,7 +135,6 @@ class AddressToGeolocation(GeolocationStepConverter):
         Args: 
             geolocator: The geolocator to use
             address_extractor: The function to use to extract the address
-
         """
         self.geolocator = geolocator
         if address_extractor == True: # noqa: E712
@@ -154,6 +152,13 @@ class AddressToGeolocation(GeolocationStepConverter):
         if location is None:
             return address, False
         return location, True
+
+
+def extract_lat_long_form(location):
+    match = re.search(
+        "([-+]?[0-9]*\.?[0-9]+),([-+]?[0-9]*\.?[0-9]+)", location  # noqa: W605
+    )
+    return match
 
 class LatLongToGeolocation(GeolocationStepConverter):
     """
@@ -198,7 +203,6 @@ class DefaultPreprocessLocationLayer(PreprocessLayer):
 
     def __init__(self, force_update:bool=False,transformers:List[GeolocationStepConverter] | None = None):
         """ Inialize the location preprocessing layer
-
         Args:
             force_update (bool, optional): preprocess locations, even it was already done. Defaults to False.
             transformers (List[GeolocationStepConverter], optional): list of preprocessing layers. Defaults to None.
