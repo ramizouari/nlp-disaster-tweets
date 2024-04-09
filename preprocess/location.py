@@ -1,6 +1,7 @@
 import asyncio
 import re
 from abc import ABC, abstractmethod
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -13,7 +14,7 @@ class PreprocessLayer(ABC):
 
 
 def is_address_form(address):
-    match = re.search("((\w+)[ ,.]*)+", address)
+    match = re.search("((\w+)[ ,.]*)+", address)  # noqa: W605
     return match
 
 
@@ -38,7 +39,8 @@ class GeolocationStepConverter(ABC):
         :param location: The location to convert
         :param metadata: The metadata to update
         :param index: The index to update
-        :return: The potentially converted location and a boolean indicating if the location was transformed
+        :return: The potentially converted location
+            and a boolean indicating if the location was transformed
         """
         pass
 
@@ -58,7 +60,8 @@ class AsyncGeolocationStepConverter(ABC):
         :param location: The location to convert
         :param metadata: The metadata to update
         :param index: The index to update
-        :return: The potentially converted location and a boolean indicating if the location was transformed
+        :return: The potentially converted location
+            and a boolean indicating if the location was transformed
         """
         pass
 
@@ -79,9 +82,9 @@ class AsyncStripLocation(GeolocationStepConverter):
 class AddressToGeolocation(GeolocationStepConverter):
     def __init__(self, geolocator, address_extractor=False):
         self.geolocator = geolocator
-        if address_extractor == True:
+        if address_extractor is True:
             self.extractor = to_address_form
-        elif address_extractor == False:
+        elif address_extractor is False:
             self.extractor = match_everything
         else:
             self.extractor = address_extractor
@@ -100,9 +103,9 @@ class AddressToGeolocation(GeolocationStepConverter):
 class AsyncAddressToGeolocation(AsyncGeolocationStepConverter):
     def __init__(self, geolocator, address_extractor=False):
         self.geolocator = geolocator
-        if address_extractor == True:
+        if address_extractor is True:
             self.extractor = to_address_form
-        elif address_extractor == False:
+        elif address_extractor is False:
             self.extractor = match_everything
         else:
             self.extractor = address_extractor
@@ -119,7 +122,9 @@ class AsyncAddressToGeolocation(AsyncGeolocationStepConverter):
 
 
 def extract_lat_long_form(location):
-    match = re.search("([-+]?[0-9]*\.?[0-9]+),([-+]?[0-9]*\.?[0-9]+)", location)
+    match = re.search(
+        "([-+]?[0-9]*\.?[0-9]+),([-+]?[0-9]*\.?[0-9]+)", location  # noqa: W605
+    )
     return match
 
 
@@ -171,7 +176,7 @@ async def async_transform(location, transformers):
 
 
 class DefaultPreprocessLocationLayer(PreprocessLayer):
-    TRANSFORMERS = []
+    TRANSFORMERS: List = []
 
     def __init__(self, force_update=False):
         self.force_update = force_update

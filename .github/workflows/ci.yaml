@@ -1,0 +1,24 @@
+name: NLP Disaster Tweets CI pipeline
+
+on: [push]
+
+jobs:
+  CI_pipeline:
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: set up PYTHONPATH
+        run: |
+          export PYTHONPATH=$PWD
+      - name: Static tests
+        run: |
+          python linter.py
