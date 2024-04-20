@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Callable, Optional, Any, List
 from geopy.extra.rate_limiter import RateLimiter, AsyncRateLimiter  # type:ignore
 from geopy.geocoders.base import Geocoder  # type:ignore
+from .utils import PreprocessLayer
 
 
 def is_address_form(address: str) -> Optional[re.Match]:
@@ -92,22 +93,6 @@ async def async_transform(location, transformers):
     if transformed:
         return location, transformed
     return await async_transform(location, transformers[1:])
-
-
-class PreprocessLayer(ABC):
-    """Abstract class representing a preprocess layer"""
-
-    @abstractmethod
-    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Preprocess the dataframe
-
-
-            df (pd.Dataframe): The dataframe to preprocess
-        Returns:
-            pd.Dataframe: The preprocessed dataframe
-        """
-
-        pass
 
 
 class GeolocationStepConverter(ABC):
