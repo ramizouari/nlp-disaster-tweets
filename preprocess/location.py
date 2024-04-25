@@ -1,6 +1,6 @@
 import re
 import numpy as np
-import pandas as pd
+import pandas as pd  # type:ignore
 from abc import ABC, abstractmethod
 from typing import Tuple, Callable, Optional, Any, List
 from geopy.extra.rate_limiter import RateLimiter, AsyncRateLimiter  # type:ignore

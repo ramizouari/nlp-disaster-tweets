@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import pandas as pd
+import pandas as pd  # type:ignore
 
 
 class PreprocessLayer(ABC):

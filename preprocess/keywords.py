@@ -1,11 +1,11 @@
 # import re
 import random
-import pandas as pd
+import pandas as pd  # type:ignore
 from typing import List
 
 # from abc import ABC, abstractmethod
 from functools import cache, partial
-import spacy
+import spacy  # type:ignore
 from .utils import PreprocessLayer
 
 
