@@ -92,9 +92,11 @@ def populate_nan_values(series: pd.Series, list_of_words: List[str]) -> pd.Serie
     return series.map(partial(_sample_if_nan, list_of_words=list_of_words))
 
 
-def _preprocess_keyword_row(row: pd.Series, list_of_words: List[str]) -> str:
+def _preprocess_keyword_row(
+    row: pd.Series, list_of_words: List[str], column_name
+) -> str:
     keyword = row.keyword
-    text = row.text
+    text = row[column_name]
     if not pd.isna(keyword):
         return keyword
     else:
@@ -115,12 +117,18 @@ def _preprocess_keyword_row(row: pd.Series, list_of_words: List[str]) -> str:
 
 
 class PreprocessKeywords(PreprocessLayer):
-    def __init__(self):
+    def __init__(self, column_name):
+        self.column_name = column_name
         pass
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         list_keyword = get_list_keyword_series(df["keyword"])
         df["keyword_prep"] = df.apply(
-            partial(_preprocess_keyword_row, list_of_words=list_keyword), axis=1
+            partial(
+                _preprocess_keyword_row,
+                list_of_words=list_keyword,
+                column_name=self.column_name,
+            ),
+            axis=1,
         )
         return df
